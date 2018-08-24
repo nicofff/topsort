@@ -2,8 +2,9 @@ extern crate clap;
 use clap::{Arg, App};
 use std::io;
 use std::io::prelude::*;
-use std::collections::BTreeMap;
 mod top_sort;
+mod decimal;
+use decimal::Decimal;
 use top_sort::MBTreeMap;
 
 enum OrderType {
@@ -11,7 +12,7 @@ enum OrderType {
 	REVERSE
 }
 
-// fn get_min(map: &BTreeMap<i32,String>)-> i32{
+// fn get_min(map: &BTreeMap<Decimal,String>)-> Decimal{
 // 	let ret = match map.iter().next() {
 // 		Some((&key,_value)) => key,
 // 		None => panic!("{:?}", 1)
@@ -19,7 +20,7 @@ enum OrderType {
 // 	ret
 // }
 
-// fn get_max(map: &BTreeMap<i32,String>)-> i32{
+// fn get_max(map: &BTreeMap<Decimal,String>)-> Decimal{
 // 	let ret = match map.iter().next_back() {
 // 		Some((&key,_value)) => key,
 // 		None => panic!("{:?}", 1)
@@ -27,14 +28,14 @@ enum OrderType {
 // 	ret
 // }
 
-fn trim_tree(tree: MBTreeMap<i32,String>, to_size: usize, ordering: &OrderType) -> MBTreeMap<i32,String>{
+fn trim_tree(tree: MBTreeMap<Decimal,String>, to_size: usize, ordering: &OrderType) -> MBTreeMap<Decimal,String>{
 	match ordering {
 	    OrderType::DEFAULT => trim_tree_top(tree,to_size),
 	    OrderType::REVERSE => trim_tree_bottom(tree, to_size),
 	}
 }
 
-fn trim_tree_top(mut tree: MBTreeMap<i32,String>, to_size: usize) -> MBTreeMap<i32,String>{
+fn trim_tree_top(mut tree: MBTreeMap<Decimal,String>, to_size: usize) -> MBTreeMap<Decimal,String>{
 	let ammount_to_prune = tree.len() - to_size;
 	let (&splitter,_) = tree.iter().nth(ammount_to_prune).unwrap();
 	let tree_top = tree.split_off(&splitter);
@@ -42,7 +43,7 @@ fn trim_tree_top(mut tree: MBTreeMap<i32,String>, to_size: usize) -> MBTreeMap<i
 	tree_top
 }
 
-fn trim_tree_bottom(mut tree:  MBTreeMap<i32,String>, to_size: usize) -> MBTreeMap<i32,String>{
+fn trim_tree_bottom(mut tree:  MBTreeMap<Decimal,String>, to_size: usize) -> MBTreeMap<Decimal,String>{
 	let ammount_to_prune = tree.len() - to_size;
 	let (&splitter,_) = tree.iter().rev().nth(ammount_to_prune-1).unwrap();
 	let _tree_top = tree.split_off(&splitter);
@@ -74,18 +75,18 @@ fn main() {
 
     let trim_ratio = 2;
     let delimiter = matches.value_of("delimiter").unwrap_or(",");
-    let field_number = matches.value_of("field").unwrap_or("0").parse::<usize>().unwrap();
+    let field_number = matches.value_of("field").unwrap_or("0").parse::<usize>().unwrap() - 1;
     let keep_results = matches.value_of("results").unwrap_or("10").parse::<usize>().unwrap();
     let ordering = match matches.is_present("reverse") {
     	true => OrderType::REVERSE,
     	false => OrderType::DEFAULT
     };
-    let mut results : MBTreeMap<i32,String> = MBTreeMap::new();
+    let mut results : MBTreeMap<Decimal,String> = MBTreeMap::new();
 	let stdin = io::stdin();
 	for line in stdin.lock().lines() {
 		let actual_line = line.unwrap();
 		let field = match actual_line.split(delimiter).nth(field_number){
-			Some(n) => n.parse::<i32>().unwrap(),
+			Some(n) => n.parse::<Decimal>().unwrap(),
 			None => continue
 		};
 		results.insert(field,actual_line);	
@@ -98,12 +99,12 @@ fn main() {
 	match ordering {
 	    OrderType::DEFAULT => {
 	    	for value in results.iter().skip(extra_results){
-				println!("{:?}", value);	
+				println!("{}", value);	
 			}
 	    },
 	    OrderType::REVERSE => {
 	    	for value in results.iter().rev().skip(extra_results){
-				println!("{:?}", value);	
+				println!("{}", value);	
 			}
 	    }
 	};
