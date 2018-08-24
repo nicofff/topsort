@@ -12,22 +12,6 @@ enum OrderType {
 	REVERSE
 }
 
-// fn get_min(map: &BTreeMap<Decimal,String>)-> Decimal{
-// 	let ret = match map.iter().next() {
-// 		Some((&key,_value)) => key,
-// 		None => panic!("{:?}", 1)
-// 	};
-// 	ret
-// }
-
-// fn get_max(map: &BTreeMap<Decimal,String>)-> Decimal{
-// 	let ret = match map.iter().next_back() {
-// 		Some((&key,_value)) => key,
-// 		None => panic!("{:?}", 1)
-// 	};
-// 	ret
-// }
-
 fn trim_tree(tree: MBTreeMap<Decimal,String>, to_size: usize, ordering: &OrderType) -> MBTreeMap<Decimal,String>{
 	match ordering {
 	    OrderType::DEFAULT => trim_tree_top(tree,to_size),
@@ -36,6 +20,9 @@ fn trim_tree(tree: MBTreeMap<Decimal,String>, to_size: usize, ordering: &OrderTy
 }
 
 fn trim_tree_top(mut tree: MBTreeMap<Decimal,String>, to_size: usize) -> MBTreeMap<Decimal,String>{
+	if to_size > tree.len(){
+		return tree
+	}
 	let ammount_to_prune = tree.len() - to_size;
 	let (&splitter,_) = tree.iter().nth(ammount_to_prune).unwrap();
 	let tree_top = tree.split_off(&splitter);
@@ -44,6 +31,9 @@ fn trim_tree_top(mut tree: MBTreeMap<Decimal,String>, to_size: usize) -> MBTreeM
 }
 
 fn trim_tree_bottom(mut tree:  MBTreeMap<Decimal,String>, to_size: usize) -> MBTreeMap<Decimal,String>{
+	if to_size > tree.len(){
+		return tree
+	}
 	let ammount_to_prune = tree.len() - to_size;
 	let (&splitter,_) = tree.iter().rev().nth(ammount_to_prune-1).unwrap();
 	let _tree_top = tree.split_off(&splitter);
@@ -95,7 +85,11 @@ fn main() {
 		}
 	}
 	let results: Vec<String> = trim_tree(results,keep_results,&ordering).flatten();
-	let extra_results = results.len() - keep_results;
+	let mut extra_results = 0;
+	if results.len() > keep_results {
+		extra_results = results.len() - keep_results;
+	}
+	
 	match ordering {
 	    OrderType::DEFAULT => {
 	    	for value in results.iter().skip(extra_results){
