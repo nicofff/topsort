@@ -5,4 +5,3 @@ authors = ["Nicolas Far <nicofff@gmail.com>"]
 
 [dependencies]
 clap = "2.32.0"
-

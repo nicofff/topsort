@@ -24,7 +24,7 @@ impl<K, String> MBTreeMap<K, String>
  
     pub fn insert(&mut self, k: K, v: String) {
         if self.map.contains_key(&k) {
-                self.map.get_mut(&k).unwrap().push(v);
+            self.map.get_mut(&k).unwrap().push(v);
         } else {
             self.map.insert(k, vec![v]);
         }

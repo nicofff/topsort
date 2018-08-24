@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::str::FromStr;
 use std::num::ParseIntError;
 
-#[derive(Debug,Clone,Copy,Hash)]
+#[derive(Debug,Clone,Copy,Hash,PartialEq)]
 pub struct Decimal {
     whole: isize,
     fractional: isize
@@ -25,12 +25,6 @@ impl PartialOrd for Decimal {
     }
 }
 
-impl PartialEq for Decimal {
-    fn eq(&self, other: &Self) -> bool {
-        (self.whole == other.whole) && (self.fractional == other.fractional)
-    }
-}
-
 impl Eq for Decimal {}
 
 impl FromStr for Decimal {
@@ -42,6 +36,6 @@ impl FromStr for Decimal {
         let whole = parts[0].parse::<isize>()?;
         let fractional = parts[0].parse::<isize>()?;
 
-        Ok(Decimal { whole: whole, fractional: fractional })
+        Ok(Decimal { whole, fractional })
     }
 }
