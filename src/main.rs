@@ -3,8 +3,7 @@ use clap::{Arg, App};
 use std::io;
 use std::io::prelude::*;
 mod topsort;
-use topsort::{TopSort,OrderType};
-
+use topsort::top_sort::{TopSort,TopSortEntry,OrderType};
 
 fn main() {
     let matches = App::new("TopSort")
@@ -45,17 +44,18 @@ fn main() {
 	let stdin = io::stdin();
 	for line in stdin.lock().lines() {
 		let actual_line = line.unwrap();
+          //println!("{}", actual_line);
 		let field = match actual_line.split(delimiter).nth(field_number){
 			Some(n) => n,
 			None => continue
 		};
-		top_sort.add(field,&actual_line);	
-		
+          let entry = TopSortEntry::new(field,&actual_line).unwrap();
+		top_sort.add(entry);	
 	}
 	for value in top_sort.get_result() {
 		println!("{}", value);
 	}
-	
-	
+	#[cfg(feature = "flame_it")]
+	flame::dump_html(&mut File::create("flame-graph.html").unwrap()).unwrap();
     
 }
