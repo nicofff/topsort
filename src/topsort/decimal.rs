@@ -31,10 +31,10 @@ impl FromStr for Decimal {
     type Err = ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-    	let parts: Vec<&str> = s.split('.').collect();
+    	let mut parts = s.split('.');
 
-        let whole = parts[0].parse::<isize>()?;
-        let fractional = parts[0].parse::<isize>()?;
+        let whole = parts.next().map_or(0,|x| x.parse::<isize>().unwrap());
+        let fractional = parts.next().map_or(0,|x| x.parse::<isize>().unwrap());
 
         Ok(Decimal { whole, fractional })
     }

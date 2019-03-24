@@ -5,22 +5,24 @@ pub mod top_sort {
 	use std::num::ParseIntError;
 	use topsort::decimal::Decimal;
 	use topsort::multi_btreemap::MBTreeMap;
+	use csv::StringRecord;
+
 	#[derive(Clone)]
 	pub enum OrderType {
 		DEFAULT,
 		REVERSE,
 	}
 
-	pub struct TopSortEntry {
+	pub struct TopSortEntry<'a> {
 		key: Decimal,
-		line: String,
+		string_record: &'a StringRecord,
 	}
 
-	impl TopSortEntry {
-		pub fn new(key: &str, line: &str) -> Result<TopSortEntry, ParseIntError> {
+	impl<'a> TopSortEntry<'a> {
+		pub fn new(key: &str, line: &'a StringRecord) -> Result<TopSortEntry<'a>, ParseIntError> {
 			Ok(TopSortEntry {
 				key: key.parse::<Decimal>()?,
-				line: line.to_owned(),
+				string_record: line,
 			})
 		}
 	}
@@ -28,7 +30,7 @@ pub mod top_sort {
 	pub struct TopSort {
 		ordering: OrderType,
 		desired_resuts: usize,
-		tree: MBTreeMap<Decimal, String>,
+		tree: MBTreeMap<Decimal, StringRecord>,
 		trim_ratio: usize,
 		bound: Option<Decimal>,
 	}
@@ -51,8 +53,8 @@ pub mod top_sort {
 			// 	OrderType::REVERSE => self.tree.iter().last().map_or(true,|(key,_)| key > &value),
 			// }
 			match self.ordering {
-				OrderType::DEFAULT => self.bound.map_or(true, |bound| bound < value),
-				OrderType::REVERSE => self.bound.map_or(true, |bound| bound > value),
+				OrderType::DEFAULT => self.bound.map_or(true, |bound| bound <= value),
+				OrderType::REVERSE => self.bound.map_or(true, |bound| bound >= value),
 			}
 		}
 
@@ -68,7 +70,7 @@ pub mod top_sort {
 				return;
 			}
 			let decimal_key = entry.key;
-			self.tree.insert(decimal_key, entry.line.clone());
+			self.tree.insert(decimal_key, entry.string_record.clone());
 			if self.bound.is_none() {
 				self.update_bound();
 			}
@@ -106,7 +108,7 @@ pub mod top_sort {
 			let _tree_top = self.tree.split_off(&splitter);
 		}
 
-		pub fn get_result(&self) -> Vec<String> {
+		pub fn get_result(&self) -> Vec<StringRecord> {
 			let results = self.tree.flatten();
 			let should_skip = if results.len() > self.desired_resuts {
 				results.len() - self.desired_resuts
