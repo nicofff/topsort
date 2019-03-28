@@ -5,7 +5,7 @@ use std::num::ParseIntError;
 #[derive(Debug,Clone,Copy,Hash,PartialEq)]
 pub struct Decimal {
     whole: isize,
-    fractional: isize
+    fractional: usize
 
 }
 
@@ -34,7 +34,7 @@ impl FromStr for Decimal {
     	let mut parts = s.split('.');
 
         let whole = parts.next().map_or(0,|x| x.parse::<isize>().unwrap());
-        let fractional = parts.next().map_or(0,|x| x.parse::<isize>().unwrap());
+        let fractional = parts.next().map_or(0,|x| x.parse::<usize>().unwrap());
 
         Ok(Decimal { whole, fractional })
     }
