@@ -5,7 +5,7 @@ pub mod top_sort {
 	use std::num::ParseIntError;
 	use topsort::decimal::Decimal;
 	use topsort::multi_btreemap::MBTreeMap;
-	use csv::StringRecord;
+	use csv::ByteRecord;
 
 	#[derive(Clone)]
 	pub enum OrderType {
@@ -15,14 +15,14 @@ pub mod top_sort {
 
 	pub struct TopSortEntry<'a> {
 		key: Decimal,
-		string_record: &'a StringRecord,
+		byte_record: &'a ByteRecord,
 	}
 
 	impl<'a> TopSortEntry<'a> {
-		pub fn new(key: &str, line: &'a StringRecord) -> Result<TopSortEntry<'a>, ParseIntError> {
+		pub fn new(key: &str, line: &'a ByteRecord) -> Result<TopSortEntry<'a>, ParseIntError> {
 			Ok(TopSortEntry {
 				key: key.parse::<Decimal>()?,
-				string_record: line,
+				byte_record: line,
 			})
 		}
 	}
@@ -30,7 +30,7 @@ pub mod top_sort {
 	pub struct TopSort {
 		ordering: OrderType,
 		desired_resuts: usize,
-		tree: MBTreeMap<Decimal, StringRecord>,
+		tree: MBTreeMap<Decimal, ByteRecord>,
 		trim_ratio: usize,
 		bound: Option<Decimal>,
 	}
@@ -70,7 +70,7 @@ pub mod top_sort {
 				return;
 			}
 			let decimal_key = entry.key;
-			self.tree.insert(decimal_key, entry.string_record.clone());
+			self.tree.insert(decimal_key, entry.byte_record.clone());
 			if self.bound.is_none() {
 				self.update_bound();
 			}
@@ -108,7 +108,7 @@ pub mod top_sort {
 			let _tree_top = self.tree.split_off(&splitter);
 		}
 
-		pub fn get_result(&self) -> Vec<StringRecord> {
+		pub fn get_result(&self) -> Vec<ByteRecord> {
 			let results = self.tree.flatten();
 			let should_skip = if results.len() > self.desired_resuts {
 				results.len() - self.desired_resuts

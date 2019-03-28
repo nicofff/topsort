@@ -4,7 +4,7 @@ use clap::{App, Arg};
 use std::io;
 mod topsort;
 use topsort::top_sort::{OrderType, TopSort, TopSortEntry};
-
+use std::str;
 fn main() {
      let matches = App::new("TopSort")
           .version("0.1")
@@ -64,17 +64,19 @@ fn main() {
           .has_headers(matches.is_present("ignore_header"))
           .delimiter(delim_char)
           .quote(quote)
+          .buffer_capacity(8 * (1<<20))
           .from_reader(io::stdin());
      let mut top_sort = TopSort::new(ordering, keep_results);
 
-     for result in rdr.records() {
+     for result in rdr.byte_records() {
           if let Ok(record) = result {
-               let entry = TopSortEntry::new(record.get(field_number).unwrap(), &record).unwrap();
+               let key = str::from_utf8(record.get(field_number).unwrap()).unwrap();
+               let entry = TopSortEntry::new(&key, &record).unwrap();
                top_sort.add(entry);
           }
      }
      for value in top_sort.get_result() {
-          let string_vec: Vec<&str> = value.iter().collect();
+          let string_vec: Vec<&str> = value.iter().map(|x| str::from_utf8(x).unwrap()).collect();
           println!("{}", string_vec.join(delimiter));
      }
 }
