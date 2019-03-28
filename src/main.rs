@@ -64,7 +64,6 @@ fn main() {
           .has_headers(matches.is_present("ignore_header"))
           .delimiter(delim_char)
           .quote(quote)
-          .buffer_capacity(8 * (1<<20))
           .from_reader(io::stdin());
      let mut top_sort = TopSort::new(ordering, keep_results);
 
