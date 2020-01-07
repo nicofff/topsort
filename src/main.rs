@@ -5,6 +5,9 @@ use std::io;
 mod topsort;
 use topsort::top_sort::{OrderType, TopSort, TopSortEntry};
 use std::str;
+use csv::Reader;
+use std::fs::File;
+
 fn main() {
      let matches = App::new("TopSort")
           .version("0.1")
@@ -30,6 +33,10 @@ fn main() {
                .short("n")
                .help("Number of results to return")
                .takes_value(true))
+          .arg(Arg::with_name("file")
+               .short("f")
+               .help("File to read")
+               .takes_value(true))
           .get_matches();
 
      let delimiter = matches.value_of("delimiter").unwrap_or(",");
@@ -54,17 +61,25 @@ fn main() {
           .parse::<usize>()
           .unwrap();
 
+     let file_name = matches
+          .value_of("file")
+          .unwrap_or("")
+          .parse::<String>()
+          .unwrap();
+
      let ordering = if matches.is_present("reverse") {
           OrderType::REVERSE
      } else {
           OrderType::DEFAULT
      };
 
+     
+     let file = File::open(file_name).unwrap();
      let mut rdr = csv::ReaderBuilder::new()
           .has_headers(matches.is_present("ignore_header"))
           .delimiter(delim_char)
           .quote(quote)
-          .from_reader(io::stdin());
+          .from_reader(file);
      let mut top_sort = TopSort::new(ordering, keep_results);
 
      for result in rdr.byte_records() {
